@@ -1,2 +1,8 @@
-# coderabbit-demo
-Public repository for CodeRabbit
+# 行业早报
+
+静态网站，包含两个模块：
+
+- 国际新闻：今日国际新闻早报（2026-11-18）
+- 前沿动态：AI 行业前沿动态
+
+本地打开 `index.html` 即可浏览。新闻条目在 `data/briefing.js`。

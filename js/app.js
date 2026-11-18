@@ -1,0 +1,83 @@
+(function renderBriefing() {
+  const data = window.BRIEFING;
+  if (!data || !Array.isArray(data.sections)) {
+    document.body.textContent = "早报数据缺失。";
+    return;
+  }
+
+  const dateNode = document.querySelector("[data-briefing-date]");
+  if (dateNode) dateNode.textContent = data.date;
+
+  const root = document.querySelector("[data-sections]");
+  if (!root) return;
+
+  const fragment = document.createDocumentFragment();
+  data.sections.forEach((section) => {
+    fragment.appendChild(renderSection(section));
+  });
+  root.replaceChildren(fragment);
+
+  const tabs = document.querySelector("[data-tabs]");
+  if (tabs) {
+    tabs.replaceChildren(
+      ...data.sections.map((section, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "tab";
+        button.textContent = section.kicker;
+        button.setAttribute("aria-controls", section.id);
+        if (index === 0) button.classList.add("is-active");
+        button.addEventListener("click", () => {
+          document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          tabs.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("is-active"));
+          button.classList.add("is-active");
+        });
+        return button;
+      })
+    );
+  }
+})();
+
+function renderSection(section) {
+  const sectionNode = document.createElement("section");
+  sectionNode.className = "module";
+  sectionNode.id = section.id;
+
+  const head = document.createElement("header");
+  head.className = "module-head";
+  head.innerHTML = `<p class="kicker"></p><h2></h2><p class="module-summary"></p>`;
+  head.querySelector(".kicker").textContent = section.kicker;
+  head.querySelector("h2").textContent = section.title;
+  head.querySelector(".module-summary").textContent = section.summary;
+
+  const list = document.createElement("ol");
+  list.className = "stories";
+  section.items.forEach((item, index) => {
+    list.appendChild(renderStory(item, index + 1));
+  });
+
+  sectionNode.append(head, list);
+  return sectionNode;
+}
+
+function renderStory(item, index) {
+  const story = document.createElement("li");
+  story.className = "story";
+
+  const indexNode = document.createElement("span");
+  indexNode.className = "index";
+  indexNode.textContent = String(index).padStart(2, "0");
+
+  const body = document.createElement("div");
+  const title = document.createElement("h3");
+  title.textContent = item.title;
+  const text = document.createElement("p");
+  text.textContent = item.body;
+  const meta = document.createElement("p");
+  meta.className = "meta";
+  meta.textContent = `来源：${item.source} ｜ ${item.time}`;
+
+  body.append(title, text, meta);
+  story.append(indexNode, body);
+  return story;
+}
