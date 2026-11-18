@@ -11,11 +11,25 @@
   const root = document.querySelector("[data-sections]");
   if (!root) return;
 
-  const fragment = document.createDocumentFragment();
-  data.sections.forEach((section) => {
-    fragment.appendChild(renderSection(section));
-  });
-  root.replaceChildren(fragment);
+  const search = document.querySelector("[data-search]");
+  const empty = document.querySelector("[data-empty]");
+
+  const paint = () => {
+    const query = (search?.value || "").trim().toLowerCase();
+    const fragment = document.createDocumentFragment();
+    let count = 0;
+    data.sections.forEach((section) => {
+      const items = section.items.filter((item) => matches(item, query));
+      count += items.length;
+      if (items.length === 0) return;
+      fragment.appendChild(renderSection({ ...section, items }));
+    });
+    root.replaceChildren(fragment);
+    if (empty) empty.hidden = count > 0;
+  };
+
+  paint();
+  search?.addEventListener("input", paint);
 
   const tabs = document.querySelector("[data-tabs]");
   if (tabs) {
@@ -37,6 +51,13 @@
     );
   }
 })();
+
+function matches(item, query) {
+  if (!query) return true;
+  return [item.title, item.body, item.source].some((field) =>
+    String(field || "").toLowerCase().includes(query)
+  );
+}
 
 function renderSection(section) {
   const sectionNode = document.createElement("section");
